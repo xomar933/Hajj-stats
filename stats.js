@@ -15,10 +15,11 @@ https://twitter.com/xomar933
 لاتنسونا من دعائكم
 */
 
+require('dotenv').config()
 
 // حط معلوماتك هنا
-var username = "x" // اسم مستخدم المنصة
-var password = "x" // الباسورد
+var username = process.env.User // اسم مستخدم المنصة
+var password = process.env.Pass // الباسورد
 const puppeteer = require('puppeteer-core')
 
 
@@ -74,6 +75,7 @@ var rows;
   const browser = await puppeteer.launch(launchOptions);
   console.log("1.5")
   const page = await browser.newPage();
+  page.setDefaultNavigationTimeout(90000);
   console.log("2")
   await page.goto('https://bsp.haj.gov.sa/')
 
@@ -81,8 +83,7 @@ var rows;
   await page.type(`input[id="j_username"]`, username, { delay: 20 })
   var passInput = await page.waitForXPath(`//*[@id="j_password"]`)
   await page.type(`input[id="j_password"]`, password, { delay: 20 })
-  await page.click('xpath///*[@id="j_idt31"]')
-  page.setDefaultNavigationTimeout(90000);
+  await page.click('xpath///*[@id="j_idt30"]')
   setTimeout(async function () {
     url = 'https://bsp.haj.gov.sa/lhop/pages/HO/reservation/List.xhtml';
     console.log(url)
