@@ -68,7 +68,7 @@ var rows;
     // args: ['--no-sandbox', "--disabled-setupid-sandbox"],
     headless: false,
     // executablePath: "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe",
-    executablePath: "C:/Program Files (x86)/chromium/chrome.exe",
+    executablePath: process.env.browserUrl,
     args: ['--start-maximized']
   };
   console.log("1")
