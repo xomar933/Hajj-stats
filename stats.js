@@ -49,6 +49,9 @@ const puppeteer = require('puppeteer-core')
 // *[@id="j_idt152:primetable_data"]/tr[3]/td[14]/button/i`
 // عدد الحجاج
 //*[@id="j_idt152:primetable_data"]/tr[1]/td[14]/button/i
+
+//*[@id="j_idt152:primetable_data"]/tr[1]/td[1]
+//*[@id="j_idt152:primetable_paginator_bottom"]/span[2]/a[2]
 //  ------------- ملاحظات اسماء  الازرار مالها فايده اذا تبي تحذفها ---------------------------
 
 const reader = require('xlsx')
@@ -86,7 +89,8 @@ var rows;
   await page.type(`input[id="j_username"]`, username, { delay: 20 })
   var passInput = await page.waitForXPath(`//*[@id="j_password"]`)
   await page.type(`input[id="j_password"]`, password, { delay: 20 })
-  await page.click('xpath///*[@id="j_idt30"]')
+  //*[@id="j_idt32"]
+  await page.click('xpath///*[@id="j_idt32"]')
   setTimeout(async function () {
     url = 'https://bsp.haj.gov.sa/lhop/pages/HO/reservation/List.xhtml';
     console.log(url)
@@ -146,10 +150,20 @@ async function dddd(page, _row, timer) {
   if (rowsChecked >= HajjsNumber && HajjsNumber != null) {
     console.log("--------------------------")
     console.log("--------------------------")
+    console.log("All")
+    console.log(HajjsNumber)
+    console.log("Checked")
+    console.log(rowsChecked)
     console.log("All Done Close this pleace")
     console.log("--------------------------")
     console.log("--------------------------")
-    process.exit(0)
+    // process.exit(0)
+    wait = false
+    pageIndex = 1;
+    rows_total = 0;
+    rowsChecked = 0;
+    repeated_total = 0;
+    dddd(page, 1)
     return
   }
   if (wait == true) {
@@ -165,7 +179,7 @@ async function dddd(page, _row, timer) {
       wait = false
     }, 1000);
   }
-  if (row >= 100) {
+  if (row > 100) {
     // if (pages >= pageIndex + 1) {
 
     pageIndex = pageIndex + 1
@@ -197,7 +211,12 @@ async function dddd(page, _row, timer) {
   }
   rowsChecked = rowsChecked + 1;
   var statusSelcetor = await page.waitForXPath(`//*[@id="j_idt152:primetable_data"]/tr[${row}]/td[13]`);
-  var statusText = await page.evaluate(element => element.textContent, statusSelcetor)
+  var statusText = await page.evaluate(element => element.textContent, statusSelcetor).catch(exception => {
+    dddd(page, row, true);
+    console.log(`element 4.5 not shown: ${exception}`)
+    return
+  }
+  );
   if (statusText != "غير مؤكد") {
     dddd(page, row + 1)
     console.log(`Checked rows ${rowsChecked} & Skip row ` + row)
