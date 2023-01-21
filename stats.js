@@ -44,9 +44,14 @@ const puppeteer = require('puppeteer-core')
 // otp input
 //*[@id="j_verifyCode"]
 //  pages
-//*[@id="j_idt151:primetable_paginator_bottom"]/span[2]/a[2]
+//*[@id="j_idt152:primetable_paginator_bottom"]/span[2]/a[2]
 
-// *[@id="j_idt151:primetable_data"]/tr[3]/td[14]/button/i`
+// *[@id="j_idt152:primetable_data"]/tr[3]/td[14]/button/i`
+// عدد الحجاج
+//*[@id="j_idt152:primetable_data"]/tr[1]/td[14]/button/i
+
+//*[@id="j_idt152:primetable_data"]/tr[1]/td[1]
+//*[@id="j_idt152:primetable_paginator_bottom"]/span[2]/a[2]
 //  ------------- ملاحظات اسماء  الازرار مالها فايده اذا تبي تحذفها ---------------------------
 
 const reader = require('xlsx')
@@ -60,7 +65,8 @@ for (const sheetName of file.SheetNames) {
   worksheets[sheetName] = reader.utils.sheet_to_json(file.Sheets[sheetName]);
 }
 
-
+let HajjsNumber
+let pages
 var rows;
 (async () => {
   let launchOptions = {
@@ -92,16 +98,43 @@ var rows;
     // await page.reload();
     await page.waitForXPath(`//*[@id="j_idt152:primetable:j_id2"]`)
     console.log("4")
-    await page.select('xpath///*[@id="j_idt151:primetable:j_id2"]', '100').catch(exception => {
-      dddd(page, row, true);
-      console.log(`element not shown: ${exception}`)
+    //*[@id="j_idt152:primetable:j_id2"]
+    //*[@id="j_idt152:primetable:j_id2"]/option[4]
+    //*[@id="j_idt156"]/div/div/div/div/div/a[1]
+    await page.select('xpath///*[@id="j_idt152:primetable:j_id2"]', '100').catch(exception => {
+      dddd(page, 1, true);
+      console.log(`element 1 not shown: ${exception}`)
       return
     }
     );
-    console.log("limit done")
+    console.log("Set limit to 100 was done")
+    //*[@id="j_idt152:primetable_paginator_bottom"]/span[1]
+    var BookId_selector = await page.waitForXPath(`//*[@id="j_idt152:primetable_paginator_bottom"]/span[1]`).catch(exception => {
+      dddd(page, row, true);
+      console.log(`element 2 not shown: ${exception}`)
+      return
+    }
+    );
+    var OrdersLengthString = await page.evaluate(element => element.textContent, BookId_selector).catch(exception => {
+      dddd(page, row, true);
+      console.log(`element 3 not shown: ${exception}`)
+      return
+    }
+    );
+    HajjsNumber = OrdersLengthString.split(" ")[3] || null
 
 
-    dddd(page, 1)
+    await page.waitForXPath(`//*[@id="j_idt152:primetable_paginator_bottom"]/span[2]`)
+    // document.querySelector("#j_idt152\\:primetable_paginator_bottom > span.ui-paginator-pages")
+    let pages_arr = await page.$$('#j_idt152\\:primetable_paginator_bottom > span.ui-paginator-pages > *');
+    // let pages_arr = await page.$$('xpath///*[@id="j_idt152:primetable_paginator_bottom"]/span[2] > *');
+    pages = pages_arr.length
+    console.log(`------------------`)
+    console.log(` Pages :  ` + pages)
+    console.log(`------------------`)
+
+
+    dddd(page, 1, false)
   }
     , 25 * 1000)
   console.log("3")
@@ -114,8 +147,27 @@ let rowsChecked = 0;
 let repeated_total = 0;
 async function dddd(page, _row, timer) {
   var row = _row
+  if (rowsChecked >= HajjsNumber && HajjsNumber != null) {
+    console.log("--------------------------")
+    console.log("--------------------------")
+    console.log("All")
+    console.log(HajjsNumber)
+    console.log("Checked")
+    console.log(rowsChecked)
+    console.log("All Done Close this pleace")
+    console.log("--------------------------")
+    console.log("--------------------------")
+    // process.exit(0)
+    wait = false
+    pageIndex = 1;
+    rows_total = 0;
+    rowsChecked = 0;
+    repeated_total = 0;
+    dddd(page, 1)
+    return
+  }
   if (wait == true) {
-    console.log("````````````````````````` wait 293-219-233-092193-0219- `````````")
+    console.log("````````````````````````` Please wait or close this app `````````")
     // setTimeout(() => {
     //   dddd(page, _row, true)لا  
     // }, 1000);
@@ -127,28 +179,47 @@ async function dddd(page, _row, timer) {
       wait = false
     }, 1000);
   }
-  await page.waitForXPath(`//*[@id="j_idt151:primetable_data"]/tr[${row}]/td[14]/button/i`);
-  var statusSelcetor = await page.waitForXPath(`//*[@id="j_idt151:primetable_data"]/tr[${row}]/td[13]`);
-  var statusText = await page.evaluate(element => element.textContent, statusSelcetor)
-  if (row >= 100) {
+  if (row > 100) {
+    // if (pages >= pageIndex + 1) {
+
     pageIndex = pageIndex + 1
     row = 1
+    console.log(`^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^`);
+    console.log(`Switch to next page : ${pageIndex}`);
+    console.log(`^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^`);
+    // } else {
+    // console.log(`All done you can close the app`)
+    // }
   }
   if (pageIndex != 1) {
-    // console.log(`^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^`);
-    // console.log(pageIndex);
-    // console.log(`^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^`);
-    await page.waitForXPath(`//*[@id="j_idt151:primetable_paginator_bottom"]/span[2]/a[${pageIndex}]`);
-    await page.click(`xpath///*[@id="j_idt151:primetable_paginator_bottom"]/span[2]/a[${pageIndex}]`).catch(exception => {
-      dddd(page, row, true);
-      console.log(`element not shown: ${exception}`)
-      return
-    }
-    );
+    await page.waitForXPath(`//*[@id="j_idt152:primetable_paginator_bottom"]/span[2]`);
+    let handles = await page.$(`xpath///*[@id="j_idt152:primetable_paginator_bottom"]/span[2]/a[${pageIndex}]`);
+    await page.evaluate(b => b.click(), handles)
+      // await page.click(`xpath///*[@id="j_idt152:primetable_data"]/tr[${row}]/td[14]/ul/li/a`)
+      .catch(exception => {
+        dddd(page, row, true);
+        console.log(`element 4 page is ${pageIndex} not shown: ${exception}`)
+        return
+      }
+      );
+    // await page.click(`xpath///*[@id="j_idt152:primetable_paginator_bottom"]/span[2]/a[${pageIndex}]`).catch(exception => {
+    //   dddd(page, row, true);
+    //   console.log(`element 4 page is ${pageIndex} not shown: ${exception}`)
+    //   return
+    // }
+    // );
   }
+  rowsChecked = rowsChecked + 1;
+  var statusSelcetor = await page.waitForXPath(`//*[@id="j_idt152:primetable_data"]/tr[${row}]/td[13]`);
+  var statusText = await page.evaluate(element => element.textContent, statusSelcetor).catch(exception => {
+    dddd(page, row, true);
+    console.log(`element 4.5 not shown: ${exception}`)
+    return
+  }
+  );
   if (statusText != "غير مؤكد") {
     dddd(page, row + 1)
-    console.log("skipped" + row)
+    console.log(`Checked rows ${rowsChecked} & Skip row ` + row)
     return
   }
 
@@ -180,7 +251,8 @@ async function dddd(page, _row, timer) {
   }
   );
   if ((worksheets.Sheet1.filter(x => x.id === id_Text && x["Book_id"] == BookId_Text).length >= 1)) {
-    console.log("repated skipped all : " + repeated_total)
+    repeated_total = repeated_total + 1
+    console.log("Skipped Total is : " + repeated_total)
     dddd(page, row + 1)
     return
   } {
@@ -234,7 +306,7 @@ async function dddd(page, _row, timer) {
 
     let len = await page.$$('#j_idt181\\:j_idt182 > *');
     console.log(`------------------`)
-    console.log(len)
+    console.log(` Pepole in this booking :  ` + len.length)
     console.log(`------------------`)
 
     for (let i = 1; i <= len.length; i++) {
@@ -280,7 +352,7 @@ async function dddd(page, _row, timer) {
       // }))
       {
         repeated_total = repeated_total + 1
-        console.log("repated : " + repeated_total)
+        console.log("Repated Total is : " + repeated_total)
       } else {
         rows_total = rows_total + 1;
         worksheets.Sheet1.push({
@@ -290,10 +362,11 @@ async function dddd(page, _row, timer) {
         });
 
         console.log(`*********************`)
-        console.log(rows_total)
-        console.log(row)
-        console.log(pageIndex)
-        console.log(`---`)
+        console.log(`Checked Rows : ${rowsChecked}`)
+        console.log(`All Hajjs add to excel is : ${rows_total}`)
+        console.log(`Row is : ` + row)
+        console.log(`page : ${pageIndex}`)
+        console.log(`Data add to excel :`)
         console.log({
           "id": id_Text,
           "Book_id": BookId_Text,
@@ -306,7 +379,7 @@ async function dddd(page, _row, timer) {
 
     reader.utils.sheet_add_json(file.Sheets["Sheet1"], worksheets.Sheet1)
     reader.writeFile(file, './result.xlsx');
-    console.log("write done")
+    console.log("Excel Save done")
     // back home
     //*[@id="j_idt156"]/div/div/div/div/div/a[1]
     await page.click(`xpath///*[@id="j_idt156"]/div/div/div/div/div/a[1]`).catch(exception => {
